@@ -38,7 +38,7 @@ func NewApp() *cli.App {
 		Flags: []cli.Flag{
 			newLogLevelFlag(),
 		},
-		Action: actions(LogMetadata),
+		Action: actions(LogMetadata, StartWeb),
 	}
 	return app
 }
