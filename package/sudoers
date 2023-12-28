@@ -1,0 +1,3 @@
+## allow web-powercycle uid to power off the system
+Runas_Alias web-powercycle = #6000
+web-powercycle ALL=NOPASSWD:/usr/bin/web-powercycle
