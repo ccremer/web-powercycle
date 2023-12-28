@@ -69,6 +69,10 @@ func StartWeb(c *cli.Context) error {
 	e.GET("/", func(c echo.Context) error {
 		return c.Render(http.StatusOK, "index.html", nil)
 	})
+	e.POST("/execute", func(c echo.Context) error {
+		logger.Info("SHUTTING DOWN")
+		return c.Render(http.StatusOK, "done.html", nil)
+	})
 	publicFs := getFileSystem()
 	assetHandler := http.FileServer(publicFs)
 	e.GET("/", echo.WrapHandler(assetHandler))
@@ -84,7 +88,7 @@ var publicRoutes = map[string]bool{
 
 func skipAccessLogs(ctx echo.Context) bool {
 	// given an exact known key, lookups in maps are faster than iterating over slices.
-	_, exists := publicRoutes[ctx.Path()]
+	_, exists := publicRoutes[ctx.Request().URL.Path]
 	return exists
 }
 
