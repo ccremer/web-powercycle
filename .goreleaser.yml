@@ -1,0 +1,43 @@
+# Make sure to check the documentation at http://goreleaser.com
+builds:
+  - env:
+      - CGO_ENABLED=0 # this is needed otherwise the Docker image build is faulty
+    goarch:
+      - amd64
+      - arm64
+    goos:
+      - linux
+    goarm:
+      - 8
+
+archives:
+  - format: binary
+    name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+
+checksum:
+  name_template: checksums.txt
+
+snapshot:
+  name_template: "{{ .Tag }}-snapshot"
+
+nfpms:
+  - vendor: ccremer
+    homepage: https://github.com/ccremer/web-powercycle
+    maintainer: ccremer
+    description: Shut down Linux over web interface
+    license: Apache 2.0
+    file_name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    formats:
+      - deb
+      - rpm
+    contents:
+      - src: package/systemd.service
+        dst: /lib/systemd/system/web-powercycle.service
+      - src: package/systemd.env
+        dst: /etc/default/web-powercycle
+        type: config
+      - src: package/sudoers
+        dst: /etc/sudoers.d/web-powercycle
+
+release:
+  prerelease: auto
