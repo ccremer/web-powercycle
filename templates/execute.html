@@ -1,0 +1,18 @@
+{{ define "main"}}
+<div class="d-flex justify-content-center flex-column gap-3">
+  {{ if .ErrorMessage }}
+  <p class="text-center text-danger">
+    {{ .ErrorMessage }}
+  </p>
+  {{ else }}
+  <p class="text-center">
+    Shutdown initiated.
+    It will be triggered in one minute.
+  </p>
+  <form action="/cancel" method="get" class="d-flex justify-content-center">
+    <button type="submit" class="btn btn-secondary">Cancel Shutdown</button>
+  </form>
+  {{ end }}
+  <a href="/" class="btn btn-outline-secondary mx-auto">Back</a>
+</div>
+{{ end }}

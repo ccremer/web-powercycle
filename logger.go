@@ -25,7 +25,6 @@ func LogMetadata(c *cli.Context) error {
 		"commit", commit,
 		"go_os", runtime.GOOS,
 		"go_arch", runtime.GOARCH,
-		"go_version", runtime.Version(),
 		"uid", os.Getuid(),
 		"gid", os.Getgid(),
 	)

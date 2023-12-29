@@ -15,21 +15,38 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-type Template struct {
-	templates *template.Template
+var (
+	indexHtml   = "index.html"
+	executeHtml = "execute.html"
+	cancelHtml  = "cancel.html"
+)
+
+type WebCommand struct {
+	DryRunMode    bool
+	SkipSudo      bool
+	ListenAddress string
 }
 
-func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-	return t.templates.ExecuteTemplate(w, name, data)
+type Renderer struct {
+	templates map[string]*template.Template
 }
 
-func StartWeb(c *cli.Context) error {
+type Values struct {
+	Hostname     string
+	ErrorMessage string
+}
 
-	e := echo.New()
-	e.HideBanner = true
-	e.HidePort = true
+func (r *Renderer) Render(w io.Writer, name string, data interface{}, _ echo.Context) error {
+	return r.templates[name].Execute(w, data)
+}
 
-	e.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
+func (c *WebCommand) StartWeb(ctx *cli.Context) error {
+
+	server := echo.New()
+	server.HideBanner = true
+	server.HidePort = true
+
+	server.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
 		// Be careful to use constant time comparison to prevent timing attacks
 		if subtle.ConstantTimeCompare([]byte(username), []byte("joe")) == 1 &&
 			subtle.ConstantTimeCompare([]byte(password), []byte("secret")) == 1 {
@@ -38,7 +55,7 @@ func StartWeb(c *cli.Context) error {
 		return false, nil
 	}))
 
-	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+	server.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogStatus:   true,
 		LogURI:      true,
 		LogError:    true,
@@ -61,24 +78,52 @@ func StartWeb(c *cli.Context) error {
 		},
 	}))
 
-	t := &Template{
-		templates: template.Must(template.ParseGlob("templates/*.html")),
+	renderer := &Renderer{
+		templates: map[string]*template.Template{
+			indexHtml:   getTemplate(indexHtml),
+			executeHtml: getTemplate(executeHtml),
+			cancelHtml:  getTemplate(cancelHtml),
+		},
 	}
-	e.Renderer = t
+	server.Renderer = renderer
 
-	e.GET("/", func(c echo.Context) error {
-		return c.Render(http.StatusOK, "index.html", nil)
-	})
-	e.POST("/execute", func(c echo.Context) error {
-		logger.Info("SHUTTING DOWN")
-		return c.Render(http.StatusOK, "done.html", nil)
-	})
-	publicFs := getFileSystem()
-	assetHandler := http.FileServer(publicFs)
-	e.GET("/", echo.WrapHandler(assetHandler))
+	var shutdownHandler ShutdownHandler = &ExecutableShutdown{
+		Logger:   logger,
+		SkipSudo: c.SkipSudo,
+	}
+	if c.DryRunMode {
+		logger.Debug("Using Dry-run shutdown handler")
+		shutdownHandler = &DryRunShutdown{
+			Logger: logger,
+		}
+	}
 
-	logger.Info("Starting server", "port", ":7443")
-	return e.Start(":7443")
+	server.GET("/", func(c echo.Context) error {
+		return c.Render(http.StatusOK, indexHtml, getData())
+	})
+	server.POST("/execute", func(c echo.Context) error {
+		data := getData()
+		err := shutdownHandler.ShutDownDelayed(1)
+		if err != nil {
+			logger.Error(err.Error())
+			data.ErrorMessage = err.Error()
+		}
+		return c.Render(http.StatusOK, executeHtml, data)
+	})
+
+	server.GET("/cancel", func(c echo.Context) error {
+		data := getData()
+		err := shutdownHandler.CancelShutdown()
+		if err != nil {
+			logger.Error(err.Error())
+			data.ErrorMessage = err.Error()
+		}
+		return c.Render(http.StatusOK, cancelHtml, data)
+	})
+
+	port := ":7443"
+	logger.Info("Starting server", "port", port)
+	return server.Start(port)
 }
 
 var publicRoutes = map[string]bool{
@@ -92,9 +137,13 @@ func skipAccessLogs(ctx echo.Context) bool {
 	return exists
 }
 
-func getFileSystem() http.FileSystem {
-	if _, err := os.Stat("templates"); err == nil {
-		return http.Dir("templates")
+func getData() Values {
+	hostname, _ := os.Hostname()
+	return Values{
+		Hostname: hostname,
 	}
-	return http.FS(templates.PublicFs)
+}
+
+func getTemplate(name string) *template.Template {
+	return template.Must(template.ParseFS(templates.PublicFs, "layout.html", name))
 }

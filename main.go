@@ -29,6 +29,7 @@ func main() {
 }
 
 func NewApp() *cli.App {
+	webCommand := WebCommand{}
 	app := &cli.App{
 		Name:    appName,
 		Usage:   appLongName,
@@ -37,8 +38,10 @@ func NewApp() *cli.App {
 		Before: before(setupLogging),
 		Flags: []cli.Flag{
 			newLogLevelFlag(),
+			newDryRunFlag(&webCommand.DryRunMode),
+			newSkipSudoFlag(&webCommand.SkipSudo),
 		},
-		Action: actions(LogMetadata, StartWeb),
+		Action: actions(LogMetadata, webCommand.StartWeb),
 	}
 	return app
 }

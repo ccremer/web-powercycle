@@ -12,3 +12,20 @@ func newLogLevelFlag() *cli.StringFlag {
 		Value:       "info",
 	}
 }
+
+func newDryRunFlag(dest *bool) *cli.BoolFlag {
+	return &cli.BoolFlag{
+		Name:        "dry-run",
+		Usage:       "Don't actually shut down system, only log. Useful for testing",
+		Destination: dest,
+	}
+}
+
+func newSkipSudoFlag(dest *bool) *cli.BoolFlag {
+	return &cli.BoolFlag{
+		Name:        "skip-sudo",
+		Usage:       "Don't invoke 'shutdown' with sudo",
+		Hidden:      true,
+		Destination: dest,
+	}
+}
