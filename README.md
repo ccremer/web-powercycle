@@ -29,13 +29,20 @@ Configure authentication: Set `AUTH_USER` and `AUTH_PASS`.
 editor /etc/default/web-powercycle
 ```
 
-Start the service
+Start the service and cleanup
 
 ```bash
 sudo service web-powercycle start
+rm -f web-powercycle.deb
 ```
 
 Visit the app at `https://localhost:7443`
+
+If you have troubles, see the logs:
+
+```bash
+sudo journalctl -fu web-powercycle
+```
 
 ## Why
 
