@@ -7,7 +7,7 @@ This project sets up a webserver that has a single purpose: Shutting down the sy
 Install on Debian/Ubuntu (deb)
 
 ```bash
-wget -O web-powercycle.deb <link>
+wget -O web-powercycle.deb https://github.com/ccremer/web-powercycle/releases/latest/download/web-powercycle_linux_amd64.deb
 sudo dpkg -i web-powercycle.deb
 ```
 
