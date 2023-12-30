@@ -25,7 +25,6 @@ func LogMetadata(c *cli.Context) error {
 		"commit", commit,
 		"go_os", runtime.GOOS,
 		"go_arch", runtime.GOARCH,
-		"go_version", runtime.Version(),
 		"uid", os.Getuid(),
 		"gid", os.Getgid(),
 	)
@@ -43,8 +42,6 @@ func setupLogging(c *cli.Context) error {
 		logLevel = pterm.LogLevelWarn
 	case "error":
 		logLevel = pterm.LogLevelError
-	case "disabled":
-		logLevel = pterm.LogLevelDisabled
 	}
 
 	backend := pterm.DefaultLogger

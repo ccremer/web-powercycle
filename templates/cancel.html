@@ -1,0 +1,14 @@
+{{ define "main"}}
+<div class="d-flex justify-content-center flex-column gap-3">
+  {{ if .ErrorMessage }}
+  <p class="text-center text-danger">
+    {{ .ErrorMessage }}
+  </p>
+  {{ else }}
+  <p class="text-center">
+    Shutdown canceled
+  </p>
+  {{ end }}
+  <a href="/" class="btn btn-outline-secondary mx-auto">Back</a>
+</div>
+{{ end }}
