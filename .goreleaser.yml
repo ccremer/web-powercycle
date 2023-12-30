@@ -8,7 +8,7 @@ builds:
     goos:
       - linux
     goarm:
-      - 8
+      - "8"
 
 archives:
   - format: binary
@@ -29,15 +29,18 @@ nfpms:
     file_name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
     formats:
       - deb
-      - rpm
     contents:
       - src: package/systemd.service
         dst: /lib/systemd/system/web-powercycle.service
       - src: package/systemd.env
         dst: /etc/default/web-powercycle
-        type: config
+        type: config|noreplace
       - src: package/sudoers
         dst: /etc/sudoers.d/web-powercycle
-
+      - dst: /etc/web-powercycle
+        type: dir
+    scripts:
+      preinstall: package/preinstall.sh
+      postinstall: package/postinstall.sh
 release:
   prerelease: auto
