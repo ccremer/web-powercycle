@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/subtle"
+	"fmt"
 	"html/template"
 	"io"
 	"log/slog"
@@ -27,6 +28,8 @@ type WebCommand struct {
 	ListenAddress string
 	AuthUser      string
 	AuthPass      string
+	CertFilePath  string
+	CertKeyPath   string
 }
 
 type Renderer struct {
@@ -42,11 +45,17 @@ func (r *Renderer) Render(w io.Writer, name string, data interface{}, _ echo.Con
 	return r.templates[name].Execute(w, data)
 }
 
-func (c *WebCommand) StartWeb(ctx *cli.Context) error {
+func (c *WebCommand) StartWeb(_ *cli.Context) error {
 
 	server := echo.New()
 	server.HideBanner = true
 	server.HidePort = true
+	server.TLSServer.ErrorLog = stdLogger
+	server.StdLogger = stdLogger
+
+	if c.AuthPass == "" || c.AuthUser == "" {
+		return fmt.Errorf("Required flags \"%s\" or \"%s\" not set", newAuthUserFlag(nil).Name, newAuthPassFlag(nil).Name)
+	}
 
 	server.Use(middleware.BasicAuth(func(username, password string, ctx echo.Context) (bool, error) {
 		// Be careful to use constant time comparison to prevent timing attacks
@@ -65,12 +74,12 @@ func (c *WebCommand) StartWeb(ctx *cli.Context) error {
 		HandleError: true, // forwards error to the global error handler, so it can decide appropriate status code
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
 			if v.Error == nil {
-				logger.LogAttrs(context.Background(), slog.LevelInfo, c.Request().Method,
+				slogger.LogAttrs(context.Background(), slog.LevelInfo, c.Request().Method,
 					slog.String("uri", v.URI),
 					slog.Int("status", v.Status),
 				)
 			} else {
-				logger.LogAttrs(context.Background(), slog.LevelError, c.Request().Method,
+				slogger.LogAttrs(context.Background(), slog.LevelError, c.Request().Method,
 					slog.String("uri", v.URI),
 					slog.Int("status", v.Status),
 					slog.String("err", v.Error.Error()),
@@ -90,13 +99,13 @@ func (c *WebCommand) StartWeb(ctx *cli.Context) error {
 	server.Renderer = renderer
 
 	var shutdownHandler ShutdownHandler = &ExecutableShutdown{
-		Logger:   logger,
+		Logger:   slogger,
 		SkipSudo: c.SkipSudo,
 	}
 	if c.DryRunMode {
-		logger.Debug("Using Dry-run shutdown handler")
+		slogger.Debug("Using Dry-run shutdown handler")
 		shutdownHandler = &DryRunShutdown{
-			Logger: logger,
+			Logger: slogger,
 		}
 	}
 
@@ -107,7 +116,7 @@ func (c *WebCommand) StartWeb(ctx *cli.Context) error {
 		data := getData()
 		err := shutdownHandler.ShutDownDelayed(1)
 		if err != nil {
-			logger.Error(err.Error())
+			slogger.Error(err.Error())
 			data.ErrorMessage = err.Error()
 		}
 		return c.Render(http.StatusOK, executeHtml, data)
@@ -117,15 +126,14 @@ func (c *WebCommand) StartWeb(ctx *cli.Context) error {
 		data := getData()
 		err := shutdownHandler.CancelShutdown()
 		if err != nil {
-			logger.Error(err.Error())
+			slogger.Error(err.Error())
 			data.ErrorMessage = err.Error()
 		}
 		return c.Render(http.StatusOK, cancelHtml, data)
 	})
 
-	port := ":7443"
-	logger.Info("Starting server", "port", port)
-	return server.Start(port)
+	slogger.Info("Starting server", "address", c.ListenAddress, "cert", c.CertFilePath, "key", c.CertKeyPath)
+	return server.StartTLS(c.ListenAddress, c.CertFilePath, c.CertKeyPath)
 }
 
 var publicRoutes = map[string]bool{

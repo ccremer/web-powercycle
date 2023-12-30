@@ -42,6 +42,9 @@ func NewApp() *cli.App {
 			newSkipSudoFlag(&webCommand.SkipSudo),
 			newAuthUserFlag(&webCommand.AuthUser),
 			newAuthPassFlag(&webCommand.AuthPass),
+			newCertFilePathFlag(&webCommand.CertFilePath),
+			newCertKeyPathFlag(&webCommand.CertKeyPath),
+			newListenAddressFlag(&webCommand.ListenAddress),
 		},
 		Action: actions(LogMetadata, webCommand.StartWeb),
 	}
