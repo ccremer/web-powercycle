@@ -40,6 +40,8 @@ func NewApp() *cli.App {
 			newLogLevelFlag(),
 			newDryRunFlag(&webCommand.DryRunMode),
 			newSkipSudoFlag(&webCommand.SkipSudo),
+			newAuthUserFlag(&webCommand.AuthUser),
+			newAuthPassFlag(&webCommand.AuthPass),
 		},
 		Action: actions(LogMetadata, webCommand.StartWeb),
 	}
