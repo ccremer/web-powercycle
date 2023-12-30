@@ -42,6 +42,8 @@ func setupLogging(c *cli.Context) error {
 		logLevel = pterm.LogLevelWarn
 	case "error":
 		logLevel = pterm.LogLevelError
+	case "disabled":
+		logLevel = pterm.LogLevelDisabled
 	}
 
 	backend := pterm.DefaultLogger
