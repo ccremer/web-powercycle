@@ -49,3 +49,33 @@ func newAuthPassFlag(dest *string) *cli.StringFlag {
 		Destination: dest,
 	}
 }
+
+func newCertFilePathFlag(dest *string) *cli.StringFlag {
+	return &cli.StringFlag{
+		Name:        "cert-file-path",
+		Usage:       "Path to the TLS certificate file",
+		Value:       "/etc/web-powercycle/cert.crt",
+		EnvVars:     []string{"CERT_FILE_PATH"},
+		Destination: dest,
+	}
+}
+
+func newCertKeyPathFlag(dest *string) *cli.StringFlag {
+	return &cli.StringFlag{
+		Name:        "cert-key-path",
+		Usage:       "Path to the TLS certificate key",
+		Value:       "/etc/web-powercycle/cert.key",
+		EnvVars:     []string{"CERT_KEY_PATH"},
+		Destination: dest,
+	}
+}
+
+func newListenAddressFlag(dest *string) *cli.StringFlag {
+	return &cli.StringFlag{
+		Name:        "listen-address",
+		Usage:       "Address (port) to listen on. Don't forget to prefix with ':' if listening on 0.0.0.0 or ::0",
+		Value:       ":7443",
+		EnvVars:     []string{"LISTEN_ADDRESS"},
+		Destination: dest,
+	}
+}

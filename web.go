@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/subtle"
+	"fmt"
 	"html/template"
 	"io"
 	"log/slog"
@@ -27,6 +28,8 @@ type WebCommand struct {
 	ListenAddress string
 	AuthUser      string
 	AuthPass      string
+	CertFilePath  string
+	CertKeyPath   string
 }
 
 type Renderer struct {
@@ -42,11 +45,14 @@ func (r *Renderer) Render(w io.Writer, name string, data interface{}, _ echo.Con
 	return r.templates[name].Execute(w, data)
 }
 
-func (c *WebCommand) StartWeb(ctx *cli.Context) error {
+func (c *WebCommand) StartWeb(_ *cli.Context) error {
 
 	server := echo.New()
 	server.HideBanner = true
 	server.HidePort = true
+	if c.AuthPass == "" || c.AuthUser == "" {
+		return fmt.Errorf("Required flags \"%s\" or \"%s\" not set", newAuthUserFlag(nil).Name, newAuthPassFlag(nil).Name)
+	}
 
 	server.Use(middleware.BasicAuth(func(username, password string, ctx echo.Context) (bool, error) {
 		// Be careful to use constant time comparison to prevent timing attacks
@@ -124,7 +130,7 @@ func (c *WebCommand) StartWeb(ctx *cli.Context) error {
 	})
 
 	port := ":7443"
-	logger.Info("Starting server", "port", port)
+	return server.StartTLS(c.ListenAddress, c.CertFilePath, c.CertKeyPath)
 	return server.Start(port)
 }
 
