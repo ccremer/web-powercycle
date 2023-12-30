@@ -2,6 +2,11 @@
 
 This project sets up a webserver that has a single purpose: Shutting down the system with a button click.
 
+![screenshot](screenshot.png)
+
+Once clicked, you have 1 minute to cancel the shutdown.
+It effectively calls `shutdown --poweroff +1`.
+
 ## Installation
 
 Install on Debian/Ubuntu (deb)
