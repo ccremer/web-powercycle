@@ -20,12 +20,12 @@ Create a self-signed TLS certificate valid for 10 years.
 
 ```bash
 sudo openssl req -new -newkey rsa:2048 -sha256 -days 3650 -nodes -x509 -keyout /etc/web-powercycle/cert.key -out /etc/web-powercycle/cert.crt
+sudo chown web-powercycle /etc/web-powercycle/*
 ```
 
 Configure authentication: Set `AUTH_USER` and `AUTH_PASS`.
 
 ```bash
-sudo chown web-powercycle /etc/web-powercycle/*
 editor /etc/default/web-powercycle
 ```
 
