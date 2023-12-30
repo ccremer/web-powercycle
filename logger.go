@@ -1,6 +1,8 @@
 package main
 
 import (
+	"io"
+	"log"
 	"log/slog"
 	"os"
 	"runtime"
@@ -9,17 +11,18 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var logger *slog.Logger
+var slogger *slog.Logger
+var stdLogger *log.Logger
 
 func init() {
 	// Remove `-v` short option from --version flag
 	cli.VersionFlag.(*cli.BoolFlag).Aliases = nil
 }
 
-// LogMetadata prints various metadata to the root logger.
+// LogMetadata prints various metadata to the root slogger.
 // It prints version, architecture and current user ID and returns nil.
 func LogMetadata(c *cli.Context) error {
-	logger.Info("Starting up "+appName,
+	slogger.Info("Starting up "+appName,
 		"version", version,
 		"date", date,
 		"commit", commit,
@@ -34,21 +37,33 @@ func LogMetadata(c *cli.Context) error {
 func setupLogging(c *cli.Context) error {
 	level := c.String(newLogLevelFlag().Name)
 
-	logLevel := pterm.LogLevelInfo
+	ptermLevel := pterm.LogLevelInfo
+	slogLevel := slog.LevelInfo
 	switch level {
 	case "debug":
-		logLevel = pterm.LogLevelDebug
+		ptermLevel = pterm.LogLevelDebug
+		slogLevel = slog.LevelDebug
 	case "warn":
-		logLevel = pterm.LogLevelWarn
+		ptermLevel = pterm.LogLevelWarn
+		slogLevel = slog.LevelWarn
 	case "error":
-		logLevel = pterm.LogLevelError
+		ptermLevel = pterm.LogLevelError
+		slogLevel = slog.LevelError
 	case "disabled":
-		logLevel = pterm.LogLevelDisabled
+		ptermLevel = pterm.LogLevelDisabled
+		slogLevel = slog.LevelError
 	}
 
 	backend := pterm.DefaultLogger
-	logHandler := pterm.NewSlogHandler(backend.WithLevel(logLevel))
+	logHandler := pterm.NewSlogHandler(backend.WithLevel(ptermLevel))
 
-	logger = slog.New(logHandler)
+	slogger = slog.New(logHandler)
+	slog.SetDefault(slogger)
+	stdLogger = slog.NewLogLogger(slogger.Handler(), slogLevel)
+	if ptermLevel == pterm.LogLevelDisabled {
+		log.SetOutput(io.Discard)
+	} else {
+		log.SetOutput(stdLogger.Writer())
+	}
 	return nil
 }
