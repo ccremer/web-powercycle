@@ -25,6 +25,8 @@ type WebCommand struct {
 	DryRunMode    bool
 	SkipSudo      bool
 	ListenAddress string
+	AuthUser      string
+	AuthPass      string
 }
 
 type Renderer struct {
@@ -46,10 +48,10 @@ func (c *WebCommand) StartWeb(ctx *cli.Context) error {
 	server.HideBanner = true
 	server.HidePort = true
 
-	server.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
+	server.Use(middleware.BasicAuth(func(username, password string, ctx echo.Context) (bool, error) {
 		// Be careful to use constant time comparison to prevent timing attacks
-		if subtle.ConstantTimeCompare([]byte(username), []byte("joe")) == 1 &&
-			subtle.ConstantTimeCompare([]byte(password), []byte("secret")) == 1 {
+		if subtle.ConstantTimeCompare([]byte(username), []byte(c.AuthUser)) == 1 &&
+			subtle.ConstantTimeCompare([]byte(password), []byte(c.AuthPass)) == 1 {
 			return true, nil
 		}
 		return false, nil

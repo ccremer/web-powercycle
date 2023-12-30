@@ -29,3 +29,23 @@ func newSkipSudoFlag(dest *bool) *cli.BoolFlag {
 		Destination: dest,
 	}
 }
+
+func newAuthUserFlag(dest *string) *cli.StringFlag {
+	return &cli.StringFlag{
+		Name:        "auth-user",
+		Usage:       "User name for basic auth",
+		Required:    true,
+		EnvVars:     []string{"AUTH_USER"},
+		Destination: dest,
+	}
+}
+
+func newAuthPassFlag(dest *string) *cli.StringFlag {
+	return &cli.StringFlag{
+		Name:        "auth-pass",
+		Usage:       "Password for basic auth",
+		Required:    true,
+		EnvVars:     []string{"AUTH_PASS"},
+		Destination: dest,
+	}
+}
