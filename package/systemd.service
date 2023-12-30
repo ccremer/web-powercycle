@@ -1,14 +1,13 @@
 # This is a systemd unit file
 [Unit]
-Description=consumption service for paperless-ngx remote API
+Description=remotely shut down system over web interface
 Documentation=https://github.com/ccremer/web-powercycle
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 EnvironmentFile=-/etc/default/web-powercycle
-User=6000
-Group=0
+User=web-powercycle
 ExecStart=/usr/bin/web-powercycle
 Restart=on-failure
 
