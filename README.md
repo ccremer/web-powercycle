@@ -25,6 +25,7 @@ sudo openssl req -new -newkey rsa:2048 -sha256 -days 3650 -nodes -x509 -keyout /
 Configure authentication: Set `AUTH_USER` and `AUTH_PASS`.
 
 ```bash
+sudo chown web-powercycle /etc/web-powercycle/*
 editor /etc/default/web-powercycle
 ```
 

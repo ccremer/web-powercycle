@@ -1,2 +1,2 @@
 ## allow web-powercycle to power off the system
-web-powercycle ALL=NOPASSWD:/usr/sbin/shutdown *
+web-powercycle ALL=NOPASSWD:/usr/sbin/shutdown *, /sbin/shutdown *
