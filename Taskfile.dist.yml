@@ -40,6 +40,11 @@ tasks:
     cmds:
       - go vet ./...
 
+  tidy:
+    desc: Run 'go mod tidy' to tidy up go.mod and go.sum
+    cmds:
+      - go mod tidy
+
   lint:
     desc: Run linting for Go code
     deps: [fmt, vet, generate]

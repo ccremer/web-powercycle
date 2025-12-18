@@ -48,6 +48,7 @@ func (r *Renderer) Render(w io.Writer, name string, data interface{}, _ echo.Con
 func (c *WebCommand) StartWeb(_ *cli.Context) error {
 
 	server := echo.New()
+	defer server.Close()
 	server.HideBanner = true
 	server.HidePort = true
 	server.TLSServer.ErrorLog = stdLogger
