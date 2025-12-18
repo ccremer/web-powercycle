@@ -1,12 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
 
 	"github.com/pterm/pterm"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var (
@@ -20,17 +21,17 @@ var (
 )
 
 func main() {
-	app := NewApp()
-	err := app.Run(os.Args)
+	app := NewRootCommand()
+	err := app.Run(context.Background(), os.Args)
 	if err != nil {
 		pterm.DefaultLogger.Error(err.Error())
 		os.Exit(1)
 	}
 }
 
-func NewApp() *cli.App {
+func NewRootCommand() *cli.Command {
 	webCommand := WebCommand{}
-	app := &cli.App{
+	app := &cli.Command{
 		Name:    appName,
 		Usage:   appLongName,
 		Version: fmt.Sprintf("%s, revision=%s, date=%s", version, commit, date),
@@ -52,21 +53,22 @@ func NewApp() *cli.App {
 	return app
 }
 
-func before(actions ...cli.BeforeFunc) cli.BeforeFunc {
-	return func(ctx *cli.Context) error {
+func before(actions ...func(context.Context, *cli.Command) (context.Context, error)) cli.BeforeFunc {
+	return func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
+		var err error
 		for _, fn := range actions {
-			if err := fn(ctx); err != nil {
-				return err
+			if ctx, err = fn(ctx, cmd); err != nil {
+				return ctx, err
 			}
 		}
-		return nil
+		return ctx, nil
 	}
 }
 
 func actions(actions ...cli.ActionFunc) cli.ActionFunc {
-	return func(ctx *cli.Context) error {
+	return func(ctx context.Context, cmd *cli.Command) error {
 		for _, action := range actions {
-			if err := action(ctx); err != nil {
+			if err := action(ctx, cmd); err != nil {
 				return err
 			}
 		}

@@ -13,7 +13,7 @@ import (
 	"github.com/ccremer/web-powercycle/templates"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var (
@@ -46,7 +46,7 @@ func (r *Renderer) Render(w io.Writer, name string, data interface{}, _ echo.Con
 	return r.templates[name].Execute(w, data)
 }
 
-func (c *WebCommand) StartWeb(_ *cli.Context) error {
+func (c *WebCommand) StartWeb(_ context.Context, _ *cli.Command) error {
 
 	server := echo.New()
 	defer func(server *echo.Echo) {
