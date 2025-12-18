@@ -1,3 +1,4 @@
 /web-powercycle
 /dist
 /.github/release-notes.md
+/Taskfile.yml

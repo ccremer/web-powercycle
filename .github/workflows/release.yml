@@ -9,6 +9,7 @@ jobs:
   dist:
     runs-on: ubuntu-latest
     steps:
+      - uses: go-task/setup-task@v1
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -16,9 +17,6 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
-
-      - name: Generate artifacts
-        run: make release-prepare
 
       - name: Build changelog from PRs with labels
         id: build_changelog
