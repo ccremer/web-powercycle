@@ -6,7 +6,7 @@
     ":disableDependencyDashboard"
   ],
   "labels": [
-    "kind:dependency"
+    "dependency"
   ],
   "postUpdateOptions": [
     "gomodTidy"
