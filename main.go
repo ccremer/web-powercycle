@@ -45,6 +45,7 @@ func NewApp() *cli.App {
 			newCertFilePathFlag(&webCommand.CertFilePath),
 			newCertKeyPathFlag(&webCommand.CertKeyPath),
 			newListenAddressFlag(&webCommand.ListenAddress),
+			newInsecureHttpFlag(&webCommand.InsecureHttp),
 		},
 		Action: actions(LogMetadata, webCommand.StartWeb),
 	}

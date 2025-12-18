@@ -25,6 +25,7 @@ var (
 type WebCommand struct {
 	DryRunMode    bool
 	SkipSudo      bool
+	InsecureHttp  bool
 	ListenAddress string
 	AuthUser      string
 	AuthPass      string
@@ -48,13 +49,19 @@ func (r *Renderer) Render(w io.Writer, name string, data interface{}, _ echo.Con
 func (c *WebCommand) StartWeb(_ *cli.Context) error {
 
 	server := echo.New()
+	defer func(server *echo.Echo) {
+		err := server.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(server)
 	server.HideBanner = true
 	server.HidePort = true
 	server.TLSServer.ErrorLog = stdLogger
 	server.StdLogger = stdLogger
 
 	if c.AuthPass == "" || c.AuthUser == "" {
-		return fmt.Errorf("Required flags \"%s\" or \"%s\" not set", newAuthUserFlag(nil).Name, newAuthPassFlag(nil).Name)
+		return fmt.Errorf("required flags \"%s\" or \"%s\" not set", newAuthUserFlag(nil).Name, newAuthPassFlag(nil).Name)
 	}
 
 	server.Use(middleware.BasicAuth(func(username, password string, ctx echo.Context) (bool, error) {
@@ -132,6 +139,13 @@ func (c *WebCommand) StartWeb(_ *cli.Context) error {
 		return c.Render(http.StatusOK, cancelHtml, data)
 	})
 
+	if c.InsecureHttp {
+		if !c.DryRunMode {
+			return fmt.Errorf("insecure-http flag is only allowed in dry-run mode")
+		}
+		slogger.Info("Starting server", "address", c.ListenAddress)
+		return server.Start(c.ListenAddress)
+	}
 	slogger.Info("Starting server", "address", c.ListenAddress, "cert", c.CertFilePath, "key", c.CertKeyPath)
 	return server.StartTLS(c.ListenAddress, c.CertFilePath, c.CertKeyPath)
 }
