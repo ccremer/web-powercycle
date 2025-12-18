@@ -1,0 +1,60 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  PROJECT_NAME: web-powercycle
+  BIN_FILENAME: '{{.PROJECT_NAME}}'
+
+tasks:
+  default:
+    desc: Show help
+    cmds:
+      - task --list
+
+  build:
+    desc: Build binary
+    deps: [fmt, vet]
+    env:
+      CGO_ENABLED: 0
+    cmds:
+      - go build {{.GO_BUILD_ARGS}} -o {{.BIN_FILENAME}} .
+
+  clean:build:
+    desc: Deletes build artifacts
+    cmds:
+      - rm -rf {{.BIN_FILENAME}}
+
+  test:
+    desc: Run unit tests against code
+    cmds:
+      - go test -race -covermode atomic ./...
+
+  fmt:
+    desc: Run 'go fmt' against code
+    cmds:
+      - go fmt ./...
+
+  vet:
+    desc: Run 'go vet' against code
+    cmds:
+      - go vet ./...
+
+  lint:
+    desc: Run linting for Go code
+    deps: [fmt, vet, generate]
+
+  git-diff:
+    desc: Check for uncommitted changes
+    cmds:
+      - echo 'Check for uncommitted changes ...'
+      - git diff --exit-code
+
+  generate:
+    desc: Generate Go artifacts
+    cmds:
+      - go generate ./...
+
+  clean:
+    desc: All-in-one target to cleanup local artifacts
+    deps: [clean:build]
