@@ -49,14 +49,19 @@ func (r *Renderer) Render(w io.Writer, name string, data interface{}, _ echo.Con
 func (c *WebCommand) StartWeb(_ *cli.Context) error {
 
 	server := echo.New()
-	defer server.Close()
+	defer func(server *echo.Echo) {
+		err := server.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(server)
 	server.HideBanner = true
 	server.HidePort = true
 	server.TLSServer.ErrorLog = stdLogger
 	server.StdLogger = stdLogger
 
 	if c.AuthPass == "" || c.AuthUser == "" {
-		return fmt.Errorf("Required flags \"%s\" or \"%s\" not set", newAuthUserFlag(nil).Name, newAuthPassFlag(nil).Name)
+		return fmt.Errorf("required flags \"%s\" or \"%s\" not set", newAuthUserFlag(nil).Name, newAuthPassFlag(nil).Name)
 	}
 
 	server.Use(middleware.BasicAuth(func(username, password string, ctx echo.Context) (bool, error) {
