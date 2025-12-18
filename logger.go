@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"io"
 	"log"
 	"log/slog"
@@ -8,7 +9,7 @@ import (
 	"runtime"
 
 	"github.com/pterm/pterm"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var slogger *slog.Logger
@@ -21,7 +22,7 @@ func init() {
 
 // LogMetadata prints various metadata to the root slogger.
 // It prints version, architecture and current user ID and returns nil.
-func LogMetadata(c *cli.Context) error {
+func LogMetadata(_ context.Context, _ *cli.Command) error {
 	slogger.Info("Starting up "+appName,
 		"version", version,
 		"date", date,
@@ -34,8 +35,8 @@ func LogMetadata(c *cli.Context) error {
 	return nil
 }
 
-func setupLogging(c *cli.Context) error {
-	level := c.String(newLogLevelFlag().Name)
+func setupLogging(ctx context.Context, cmd *cli.Command) (context.Context, error) {
+	level := cmd.String(newLogLevelFlag().Name)
 
 	ptermLevel := pterm.LogLevelInfo
 	slogLevel := slog.LevelInfo
@@ -65,5 +66,5 @@ func setupLogging(c *cli.Context) error {
 	} else {
 		log.SetOutput(stdLogger.Writer())
 	}
-	return nil
+	return ctx, nil
 }
