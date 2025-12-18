@@ -70,6 +70,16 @@ func newCertKeyPathFlag(dest *string) *cli.StringFlag {
 	}
 }
 
+func newInsecureHttpFlag(dest *bool) *cli.BoolFlag {
+	return &cli.BoolFlag{
+		Name:        "insecure-http",
+		Usage:       "Allow insecure HTTP connections. Only allowed in dry-run mode",
+		Value:       false,
+		EnvVars:     []string{"INSECURE_HTTP"},
+		Destination: dest,
+	}
+}
+
 func newListenAddressFlag(dest *string) *cli.StringFlag {
 	return &cli.StringFlag{
 		Name:        "listen-address",

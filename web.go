@@ -25,6 +25,7 @@ var (
 type WebCommand struct {
 	DryRunMode    bool
 	SkipSudo      bool
+	InsecureHttp  bool
 	ListenAddress string
 	AuthUser      string
 	AuthPass      string
@@ -133,6 +134,13 @@ func (c *WebCommand) StartWeb(_ *cli.Context) error {
 		return c.Render(http.StatusOK, cancelHtml, data)
 	})
 
+	if c.InsecureHttp {
+		if !c.DryRunMode {
+			return fmt.Errorf("insecure-http flag is only allowed in dry-run mode")
+		}
+		slogger.Info("Starting server", "address", c.ListenAddress)
+		return server.Start(c.ListenAddress)
+	}
 	slogger.Info("Starting server", "address", c.ListenAddress, "cert", c.CertFilePath, "key", c.CertKeyPath)
 	return server.StartTLS(c.ListenAddress, c.CertFilePath, c.CertKeyPath)
 }
