@@ -5,7 +5,7 @@ go 1.25.5
 require (
 	github.com/labstack/echo/v4 v4.15.1
 	github.com/pterm/pterm v0.12.82
-	github.com/urfave/cli/v3 v3.6.2
+	github.com/urfave/cli/v3 v3.7.0
 )
 
 require (
